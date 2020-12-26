@@ -179,6 +179,7 @@
 					$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 					foreach ($result as $v2) $idList[] = $v2[$select["idName"]];
 				}
+				return $idList;
 			} catch (PDOException $e) {
 				return false;
 			}
