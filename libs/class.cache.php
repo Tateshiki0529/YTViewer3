@@ -171,13 +171,15 @@
 			];
 			try {
 				foreach ($availableMode as $v) {
-					$idList = [];
 					$select = $this->selectDB($v);
 					$stmt = $this->pdo->prepare("SELECT `{$select["idName"]}` FROM {$select["tableName"]} WHERE `updateCircle` = :circle;");
-					$stmt->bindValue(":circle", $circle, PDO::PARAM_INT);
+					$stmt->bindParam(":circle", $circle, PDO::PARAM_STR);
 					if (!$stmt->execute()) return false;
 					$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-					foreach ($result as $v2) $idList[] = $v2[$select["idName"]];
+					$idList[$select["idName"]] = [];
+					foreach ($result as $v2) {
+						$idList[$select["idName"]][] = $v2[$select["idName"]];
+					}
 				}
 				return $idList;
 			} catch (PDOException $e) {
