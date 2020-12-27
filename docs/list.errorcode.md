@@ -21,6 +21,7 @@
 | 4      | Can't retrieve | データを受信できない。           |
 | 5      | Can't update   | データを更新できない。           |
 | 6      | Can't insert   | データを追加できない。           |
+| 7      | Not creared    | 作成されていない。               |
 
 ## Tertiary
 | コード | ソース内表記                         | 説明                                                                           |
