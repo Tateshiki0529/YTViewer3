@@ -1,5 +1,8 @@
 <?php
 
+	// Error reporting
+	#error_reporting(E_ALL);
+
 	// YouTube Data API controller <class.ytapi.php>
 
 	// Load config program
@@ -132,6 +135,7 @@
 						"key" => $this->key
 					]);
 					$data = file_get_contents($base_url.$params);
+					#var_dump(json_decode($data, true));
 					$result = json_decode($data, true)["items"][0];
 					if ($result == null) return false;
 					$result["snippet"]["publishedAt"] = $this->convert8601_datetime($result["snippet"]["publishedAt"]);
@@ -279,6 +283,7 @@
 					$result = json_decode($data, true)["items"][0];
 					if ($result == null) return false;
 					$result["snippet"]["publishedAt"] = $this->convert8601_datetime($result["snippet"]["publishedAt"]);
+					$cacheSaved = $this->cache->saveCache(CACHEMODE_PLAYLIST, $result);
 					$cacheDetails = [
 						"useCache" => false,
 						"lastCached" => time(),
@@ -298,11 +303,10 @@
 				$result = json_decode($data, true)["items"][0];
 				if ($result == null) return false;
 				$result["snippet"]["publishedAt"] = $this->convert8601_datetime($result["snippet"]["publishedAt"]);
-				$cacheSaved = $this->cache->saveCache(CACHEMODE_PLAYLIST, $result);
 				$cacheDetails = [
 					"useCache" => false,
 					"lastCached" => time(),
-					"isCached" => $cacheSaved
+					"isCached" => null
 				];
 			}
 			$return["data"] = $result;
