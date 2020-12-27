@@ -118,6 +118,7 @@
 		public function getVideo($id, $options = null) {
 			if ($this->createCacheObject) {
 				$cacheData = $this->cache->loadCache(CACHEMODE_VIDEO, $id);
+				#var_dump($cacheData);
 				if ($cacheData !== false) {
 					$result = $cacheData["cacheData"];
 					$cacheDetails = [
@@ -145,6 +146,7 @@
 						$result["liveStreamingDetails"]["actualEndTime"] = $this->convert8601_datetime($result["liveStreamingDetails"]["actualEndTime"]);
 						$result["liveStreamingDetails"]["scheduledStartTime"] = $this->convert8601_datetime($result["liveStreamingDetails"]["scheduledStartTime"]);
 					}
+					#var_dump($result);
 					$cacheSaved = $this->cache->saveCache(CACHEMODE_VIDEO, $result);
 					$cacheDetails = [
 						"useCache" => false,
