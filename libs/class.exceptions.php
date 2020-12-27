@@ -1,15 +1,15 @@
 <?php
-	
+
 	// Exception class file <class.exceptions.php>
-	
+
 	/**
 	 * [EXCEPTIONS] 例外クラス群
 	 *
 	 * 例外クラス定義ファイル。
-	 * エラーコードの定義: nmmll
-	 * n = Primary reason
-	 * m = Secondary reason
-     * l = Sub secondary reason
+	 * エラーコードの定義: ppsstt
+	 * p = Primary reason
+	 * s = Secondary reason
+     * t = Tertiary reason
 	 *
 	 * @access public
 	 * @author Tateshiki0529 <info@ttsk3.net>
@@ -22,8 +22,8 @@
 	 * [EXCEPTION] YouTube Data API利用不可の例外 (YTAPIUnavailableException)
 	 *
 	 * YouTube Data API v3 (以下、YouTubeAPI)の例外クラス。
-	 * n = 1 (YTAPI error)
-	 * m = 1 (Is unavailable)
+	 * p = 1 (YTAPI error)
+	 * s = 1 (Is unavailable)
 	 *
 	 * @access public
 	 * @extends Exception
@@ -36,14 +36,40 @@
 		 *
 		 * @access public
 		 * @param string $message エラーメッセージ
-		 * @throws YTAPIUnavailableException (Extend: Exception) (Error Code: 10101)
+		 * @throws YTAPIUnavailableException (Extend: Exception) (Error Code: 10100)
 		 * @see Exception
 		**/
 		public function __construct($message) {
-			parent::__construct($message." (Error 10101)", 10101);
+			parent::__construct($message." (Error 10100)", 10100);
 		}
 	}
 
+	/**
+	 * [EXCEPTION] キャッシュインスタンス未作成の例外 (YTAPINoCacheObjectException)
+	 *
+	 * YouTubeAPI内でキャッシュインスタンスが作成されていない時の例外クラス。
+	 * p = 1 (YTAPI error)
+	 * s = 7 (Not created)
+	 * t = 1 (Please check your code)
+	 *
+	 * @access public
+	 * @extends Exception
+	**/
+	class YTAPINoCacheObjectException extends Exception {
+		/**
+		 * [SETUP] コンストラクタ (__construct)
+		 *
+		 * 例外を発生させる。
+		 *
+		 * @access public
+		 * @param string $message エラーメッセージ
+		 * @throws YTAPINoCacheObjectException (Extend: Exception) (Error Code: 10701)
+		 * @see Exception
+		**/
+		public function __construct($message) {
+			parent::__construct($message." (Error 10701)", 10701);
+		}
+	}
 	/**
 	 * [EXCEPTION] データベース接続失敗の例外 (DBConnectException)
 	 *
@@ -66,13 +92,13 @@
 		 * @see Exception
 		**/
 		public function __construct($message) {
-			parent::__construct($message." (Error 20201)", 20201);
+			parent::__construct($message." (Error 20200)", 20200);
 		}
 	}
 
 	/**
 	 * [EXCEPTION] データベース重複の例外 (DBDataDuplicateException)
-	 * 
+	 *
 	 * データベースの例外クラス。
 	 * n = 2 (DB error)
 	 * m = 3 (Is duplicated)
@@ -99,7 +125,7 @@
 
 	/**
 	 * [EXCEPTION] データベース取得エラーの例外 (DBDataRetrieveException)
-	 * 
+	 *
 	 * データベースの例外クラス。
 	 * n = 2 (DB error)
 	 * m = 4 (Can't retrieve)
@@ -126,7 +152,7 @@
 
 	/**
 	 * [EXCEPTION] データベース更新エラーの例外 (DBDataUpdateException)
-	 * 
+	 *
 	 * データベースの例外クラス。
 	 * n = 2 (DB error)
 	 * m = 5 (Can't update)
@@ -153,7 +179,7 @@
 
 	/**
 	 * [EXCEPTION] データベース追加エラーの例外 (DBDataInsertException)
-	 * 
+	 *
 	 * データベースの例外クラス。
 	 * n = 2 (DB error)
 	 * m = 6 (Can't insert)
