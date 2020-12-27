@@ -105,7 +105,7 @@
 					$tempData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 					$lastData = $tempData[count($tempData) - 1];
 					$nextCircle = $lastData["updateCircle"] + 1;
-					if ($nextCircle >= 24) $nextCircle = 0;
+					if ($nextCircle >= 6) $nextCircle = 0;
 					$stmt = $this->pdo->prepare("INSERT INTO `{$select["tableName"]}` (`{$select["idName"]}`, `cacheData`, `lastCached`, `updateCircle`) VALUES (:id, :data, :last, :circle);");
 					$encoded = serialize($data);
 					$stmt->bindParam(":data", $encoded, PDO::PARAM_STR);
