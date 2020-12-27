@@ -2,7 +2,7 @@
 
 	// Test file <tests.php>
 
-	// Load class
+	// Load classes
 	require_once './class.ytapi.php';
 	require_once './class.cache.php';
 
