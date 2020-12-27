@@ -11,7 +11,7 @@
 
 	header("Content-Type: application/json");
 
-	switch ($_GET["m"]) {
+	/*switch ($_GET["m"]) {
 		case 'video':
 			var_dump($api->getVideo($_GET["id"]));
 			break;
@@ -27,8 +27,8 @@
 		default:
 			# code...
 			break;
-	}
+	}*/
 
-	#echo json_encode($cache->updateCache($_GET["circle"]), JSON_PRETTY_PRINT);
+	echo json_encode($cache->updateCache($_GET["circle"]), JSON_PRETTY_PRINT);
 
 ?>
