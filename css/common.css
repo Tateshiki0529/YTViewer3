@@ -1,0 +1,36 @@
+.h1 {
+  width: 500px;
+  margin: 0 auto;
+  padding: 10px 0;
+  font-family: sans-serif;
+  font-size: 20px;
+  color:#3cb3e4;
+}
+.heading {
+  margin: 10px 0
+}
+.h1-5 .heading {
+  overflow: hidden;
+  position: relative;
+  padding-bottom: 3px;
+}
+.h1-5 .heading span{
+  padding: 8px;
+}
+.h1-5 .heading:before {
+  content: "";
+  border-bottom: 3px solid #3cb3e4;
+  bottom: 0;
+  height: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 0;
+}
+.h1-5 .heading:after {
+  border-bottom: 3px solid #ddd;
+  bottom: 0;
+  content: "";
+  position: absolute;
+  width: 500px;
+  z-index: 1;
+}
