@@ -122,7 +122,7 @@
 					throw new DBDataDuplicateException("データの重複が確認されました。管理人へご連絡ください。(ID: {$idValue}) (Mode: {$mode})");
 				}
 			} catch (PDOException $e) {
-				return $e->getMessage();
+				return false;
 			}
 		}
 
