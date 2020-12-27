@@ -1,7 +1,7 @@
 <?php
 
 	// Common config file <common.php>
-	// Copied original file
+	// Copied original file "common.php"
 
 	// --- [YouTube Data API v3] ---
 	define("YTAPI_KEYS", ["--- SOME KEY #1 ---", "--- SOME KEY #2 ---", "--- SOME KEY #3 ---"]);
