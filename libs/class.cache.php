@@ -100,7 +100,7 @@
 						}
 					}
 				} elseif (count($result) == 0) {
-					$stmt = $this->pdo->prepare("INSERT INTO `{$tableName}` (`{$idName}`, `cacheData`, `lastCached`) VALUES (:id, :data, :last);");
+					$stmt = $this->pdo->prepare("INSERT INTO `{$select["tableName"]}` (`{$select["idName"]}`, `cacheData`, `lastCached`) VALUES (:id, :data, :last);");
 					$encoded = serialize($data);
 					$stmt->bindParam(":data", $encoded, PDO::PARAM_STR);
 					$stmt->bindValue(":last", $nowTime, PDO::PARAM_INT);
@@ -187,12 +187,20 @@
 					}
 				}
 				foreach($idList as $k => $v) {
-					if ($k == "videoId") foreach ($v as $v2) $datas[$k][$v2] = $this->api->getVideo($v2);
-					if ($k == "channelId") foreach ($v as $v2) $datas[$k][$v2] = $this->api->getChannel($v2);
-					if ($k == "playlistId") foreach ($v as $v2) $datas[$k][$v2] = $this->api->getPlaylist($v2);
+					if ($k == "videoId") foreach ($v as $v2) $datas["videos"][$v2] = $this->api->getVideo($v2);
+					if ($k == "channelId") foreach ($v as $v2) $datas["channels"][$v2] = $this->api->getChannel($v2);
+					if ($k == "playlistId") foreach ($v as $v2) $datas["playlists"][$v2] = $this->api->getPlaylist($v2);
 				}
 
-				
+				foreach ($datas as $k => $v) {
+					if ($k == "videos") {
+						var_dump($v);
+					} elseif ($k == "channels") {
+
+					} elseif ($k == "playlists") {
+
+					}
+				}
 				return $datas;
 			} catch (PDOException $e) {
 				return false;
