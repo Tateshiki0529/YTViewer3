@@ -186,9 +186,14 @@
 						$idList[$select["idName"]][] = $v2[$select["idName"]];
 					}
 				}
-				#foreach($idList as $k => $v)
-					#$this->api->
-				return $idList;
+				foreach($idList as $k => $v) {
+					if ($k == "videoId") foreach ($v as $v2) $datas[$k][$v2] = $this->api->getVideo($v2);
+					if ($k == "channelId") foreach ($v as $v2) $datas[$k][$v2] = $this->api->getChannel($v2);
+					if ($k == "playlistId") foreach ($v as $v2) $datas[$k][$v2] = $this->api->getPlaylist($v2);
+				}
+
+				
+				return $datas;
 			} catch (PDOException $e) {
 				return false;
 			}
