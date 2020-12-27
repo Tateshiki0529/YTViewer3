@@ -185,6 +185,7 @@
 				CACHEMODE_CHANNEL,
 				CACHEMODE_PLAYLIST
 			];
+			$nowTime = time();
 			try {
 				foreach ($availableMode as $v) {
 					$select = $this->selectDB($v);
@@ -193,7 +194,6 @@
 					if (!$stmt->execute()) return false;
 					$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 					$idList[$select["idName"]] = [];
-					$nowTime = time();
 					foreach ($result as $v2) {
 						$after6Months = strtotime(date("Y/m/d H:i:s", $v2["lastAccessed"])." +6 months");
 						if ($nowTime >= $after6Months) {
@@ -219,13 +219,54 @@
 
 				#var_dump($videoData);
 				foreach ($videoData as $k => $v) {
-					if (!$this->saveCache(CACHEMODE_VIDEO, $v["data"], true)) return false;
+					$this->saveCache(CACHEMODE_VIDEO, $v["data"], true);
+					$stmt = $this->pdo->prepare("SELECT * FROM `video_statistics_transition` WHERE `videoId` = :id");
+					$stmt->bindParam(":id", $v["data"]["id"], PDO::PARAM_STR);
+					if ($stmt->execute()) {
+						$result = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
+						if ($result !== null) {
+							foreach ($result as $k2 => $v2) {
+								$result[$k2] = unserialize($v2);
+								array_shift($result[$k2]);
+							}
+							$result["viewCountTransition"][] = (int)$v["data"]["statistics"]["viewCount"];
+							$result["likeCountTransition"][] = (int)$v["data"]["statistics"]["likeCount"];
+							$result["dislikeCountTransition"][] = (int)$v["data"]["statistics"]["dislikeCount"];
+							$result["commentCountTransition"][] = (int)$v["data"]["statistics"]["commentCount"];
+							$result["recordedDate"][] = $nowTime;
+							foreach ($result as $k2 => $v2) $result[$k2] = serialize($v2);
+							$sql = "UPDATE `video_statistics_transition` SET `viewCountTransition` = :vct, `likeCountTransition` = :lct, `dislikeCountTransition` = :dlct, `commentCountTransition` = :cct, `recordedDate` = :rdate WHERE `videoId` = :id;";
+						} else {
+							foreach (range(0,58) as $v2) {
+								$result["viewCountTransition"][] = 0;
+								$result["likeCountTransition"][] = 0;
+								$result["dislikeCountTransition"][] = 0;
+								$result["commentCountTransition"][] = 0;
+								$result["recordedDate"][] = $nowTime;
+							}
+							$result["viewCountTransition"][] = (int)$v["data"]["statistics"]["viewCount"];
+							$result["likeCountTransition"][] = (int)$v["data"]["statistics"]["likeCount"];
+							$result["dislikeCountTransition"][] = (int)$v["data"]["statistics"]["dislikeCount"];
+							$result["commentCountTransition"][] = (int)$v["data"]["statistics"]["commentCount"];
+							$result["recordedDate"][] = $nowTime;
+							foreach ($result as $k2 => $v2) $result[$k2] = serialize($v2);
+							$sql = "INSERT INTO `video_statistics_transition` (`videoId`, `viewCountTransition`, `likeCountTransition`, `dislikeCountTransition`, `commentCountTransition`, `recordedDate`) VALUES (:id, :vct, :lct, :dlct, :cct, :rdate);";
+						}
+						$stmt = $this->pdo->prepare($sql);
+						$stmt->bindParam(":id", $v["data"]["id"], PDO::PARAM_STR);
+						$stmt->bindParam(":vct", $result["viewCountTransition"], PDO::PARAM_STR);
+						$stmt->bindParam(":lct", $result["likeCountTransition"], PDO::PARAM_STR);
+						$stmt->bindParam(":dlct", $result["dislikeCountTransition"], PDO::PARAM_STR);
+						$stmt->bindParam(":cct", $result["commentCountTransition"], PDO::PARAM_STR);
+						$stmt->bindParam(":rdate", $result["recordedDate"], PDO::PARAM_STR);
+						$stmt->execute();
+					}
 				}
 				foreach ($channelData as $k => $v) {
-					if (!$this->saveCache(CACHEMODE_CHANNEL, $v["data"], true)) return false;
+					$this->saveCache(CACHEMODE_CHANNEL, $v["data"], true);
 				}
 				foreach ($playlistData as $k => $v) {
-					if (!$this->saveCache(CACHEMODE_PLAYLIST, $v["data"], true)) return false;
+					$this->saveCache(CACHEMODE_PLAYLIST, $v["data"], true);
 				}
 				return true;
 			} catch (PDOException $e) {
