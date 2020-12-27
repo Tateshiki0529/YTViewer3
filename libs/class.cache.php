@@ -52,7 +52,7 @@
 					$this->pass,
 					$this->option
 				);
-				$this->api = new YouTubeAPI();
+				$this->api = new YouTubeAPI(false);
 			} catch (PDOException $e) {
 				throw new DBConnectException("データベースへの接続に失敗しました。[".$e->getMessage()."]");
 			}
@@ -186,8 +186,8 @@
 						$idList[$select["idName"]][] = $v2[$select["idName"]];
 					}
 				}
-				foreach($idList as $k => $v)
-					$this->api->
+				#foreach($idList as $k => $v)
+					#$this->api->
 				return $idList;
 			} catch (PDOException $e) {
 				return false;
