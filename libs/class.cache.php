@@ -73,7 +73,7 @@
 		 * @see DBDataDuplicateException (データ重複エラー) (Referrence: class.exceptions.php)
 		 * @deprecated DBDataInsertException, DBDataRetrieveException, DBDataUpdateException (DB操作時エラー) (Referrence: class.exceptions.php)
 		**/
-		public function saveCache($mode, $data, $id = null) {
+		public function saveCache($mode, $data, $isUpdate = false, $id = null) {
 			$nowTime = time();
 			$select = $this->selectDB($mode);
 			if ($mode == CACHEMODE_PLAYLISTCONTENTS) {$idValue = $id;} else {$idValue = $data["id"];}
@@ -88,10 +88,12 @@
 				$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 				if (count($result) == 1) {
 					if (($nowTime - $result[0]["lastCached"]) > 180) {
-						$stmt = $this->pdo->prepare("UPDATE `{$select["tableName"]}` SET `cacheData` = :data, `lastCached` = :last WHERE `{$select["idName"]}` = :id;");
+						if (!$isUpdate) {$addText = ", `lastAccessed` = :last2";} else {$addText = "";}
+						$stmt = $this->pdo->prepare("UPDATE `{$select["tableName"]}` SET `cacheData` = :data, `lastCached` = :last{$addText} WHERE `{$select["idName"]}` = :id;");
 						$encoded = serialize($data);
 						$stmt->bindParam(":data", $encoded, PDO::PARAM_STR);
 						$stmt->bindValue(":last", $nowTime, PDO::PARAM_INT);
+						if (!$isUpdate) $stmt->bindValue(":last2", $nowTime, PDO::PARAM_INT);
 						$stmt->bindParam(":id", $idValue, PDO::PARAM_STR);
 						if (!$stmt->execute()) {
 							#throw new DBDataUpdateException("データの更新に失敗しました。");
@@ -106,14 +108,16 @@
 					$lastData = $tempData[count($tempData) - 1];
 					$nextCircle = $lastData["updateCircle"] + 1;
 					if ($nextCircle >= 6) $nextCircle = 0;
-					$stmt = $this->pdo->prepare("INSERT INTO `{$select["tableName"]}` (`{$select["idName"]}`, `cacheData`, `lastCached`, `updateCircle`) VALUES (:id, :data, :last, :circle);");
+					$stmt = $this->pdo->prepare("INSERT INTO `{$select["tableName"]}` (`{$select["idName"]}`, `cacheData`, `lastCached`, `lastAccessed`, `updateCircle`) VALUES (:id, :data, :last1, :last2, :circle);");
 					$encoded = serialize($data);
 					$stmt->bindParam(":data", $encoded, PDO::PARAM_STR);
-					$stmt->bindValue(":last", $nowTime, PDO::PARAM_INT);
+					$stmt->bindValue(":last1", $nowTime, PDO::PARAM_INT);
+					$stmt->bindValue(":last2", $nowTime, PDO::PARAM_INT);
 					$stmt->bindParam(":id", $idValue, PDO::PARAM_STR);
 					$stmt->bindValue(":circle", $nextCircle, PDO::PARAM_INT);
 					if (!$stmt->execute()) {
 						#throw new DBDataInsertException("データの追加に失敗しました。");
+						#return $stmt->errorInfo();
 						return false;
 					} else {
 						return true;
@@ -184,13 +188,27 @@
 			try {
 				foreach ($availableMode as $v) {
 					$select = $this->selectDB($v);
-					$stmt = $this->pdo->prepare("SELECT `{$select["idName"]}` FROM {$select["tableName"]} WHERE `updateCircle` = :circle;");
+					$stmt = $this->pdo->prepare("SELECT `{$select["idName"]}`, `lastAccessed` FROM {$select["tableName"]} WHERE `updateCircle` = :circle;");
 					$stmt->bindParam(":circle", $circle, PDO::PARAM_STR);
 					if (!$stmt->execute()) return false;
 					$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 					$idList[$select["idName"]] = [];
+					$nowTime = time();
 					foreach ($result as $v2) {
-						$idList[$select["idName"]][] = $v2[$select["idName"]];
+						$after6Months = strtotime(date("Y/m/d H:i:s", $v2["lastAccessed"])." +6 months");
+						if ($nowTime >= $after6Months) {
+							$deleteList[$select["idName"]][] = $v2[$select["idName"]];
+						} else {
+							$idList[$select["idName"]][] = $v2[$select["idName"]];
+						}
+					}
+				}
+				#var_dump($deleteList, $idList);
+				if (isset($deleteList)) {
+					foreach($deleteList as $k => $v) {
+						if ($k == "videoId") foreach ($v as $v2) if ($this->pdo->query("DELETE FROM `video_cache` WHERE `videoId` = '{$v2}';") === false) return false;
+						if ($k == "channelId") foreach ($v as $v2) if ($this->pdo->query("DELETE FROM `channel_cache` WHERE `channelId` = '{$v2}';") === false) return false;
+						if ($k == "playlistId") foreach ($v as $v2) if ($this->pdo->query("DELETE FROM `playlist_cache` WHERE `playlistId` = '{$v2}';") === false) return false;
 					}
 				}
 				foreach($idList as $k => $v) {
@@ -201,17 +219,17 @@
 
 				#var_dump($videoData);
 				foreach ($videoData as $k => $v) {
-					if (!$this->saveCache(CACHEMODE_VIDEO, $v["data"])) return false;
+					if (!$this->saveCache(CACHEMODE_VIDEO, $v["data"], true)) return false;
 				}
 				foreach ($channelData as $k => $v) {
-					if (!$this->saveCache(CACHEMODE_CHANNEL, $v["data"])) return false;
+					if (!$this->saveCache(CACHEMODE_CHANNEL, $v["data"], true)) return false;
 				}
 				foreach ($playlistData as $k => $v) {
-					if (!$this->saveCache(CACHEMODE_PLAYLIST, $v["data"])) return false;
+					if (!$this->saveCache(CACHEMODE_PLAYLIST, $v["data"], true)) return false;
 				}
 				return true;
 			} catch (PDOException $e) {
-				return false;
+				return $e->getMessage();
 			}
 		}
 
