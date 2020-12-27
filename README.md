@@ -4,6 +4,8 @@
 本サイトはBootstrapテーマの「Honoka」を使用しています。詳細は以下のリンクよりご確認ください。  
 [GitHub windyakin/Honoka](https://github.com/windyakin/Honoka)  
 [Honoka 公式サイト](https://honokak.osaka/)
+## 進捗
+進捗はREADME.mdで公開予定です。  
 ## 連絡先
 - Tateshiki0529 \<[info@ttsk3.net](mailto:info@ttsk3.net)\>
 - Tateshiki Lab. \<[lab@ttsk3.net](mailto:lab@ttsk3.net)\>
