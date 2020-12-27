@@ -167,11 +167,10 @@
 					$result["liveStreamingDetails"]["actualEndTime"] = $this->convert8601_datetime($result["liveStreamingDetails"]["actualEndTime"]);
 					$result["liveStreamingDetails"]["scheduledStartTime"] = $this->convert8601_datetime($result["liveStreamingDetails"]["scheduledStartTime"]);
 				}
-				$cacheSaved = $this->cache->saveCache(CACHEMODE_VIDEO, $result);
 				$cacheDetails = [
 					"useCache" => false,
 					"lastCached" => time(),
-					"isCached" => $cacheSaved
+					"isCached" => null
 				];
 			}
 			$return["data"] = $result;
@@ -234,11 +233,10 @@
 				$result = json_decode($data, true)["items"][0];
 				if ($result == null) return false;
 				$result["snippet"]["publishedAt"] = $this->convert8601_datetime($result["snippet"]["publishedAt"]);
-				$cacheSaved = $this->cache->saveCache(CACHEMODE_CHANNEL, $result);
 				$cacheDetails = [
 					"useCache" => false,
 					"lastCached" => time(),
-					"isCached" => $cacheSaved
+					"isCached" => null
 				];
 			}
 			$return["data"] = $result;
@@ -281,11 +279,10 @@
 					$result = json_decode($data, true)["items"][0];
 					if ($result == null) return false;
 					$result["snippet"]["publishedAt"] = $this->convert8601_datetime($result["snippet"]["publishedAt"]);
-					$cacheSaved = $this->cache->saveCache(CACHEMODE_PLAYLIST, $result);
 					$cacheDetails = [
 						"useCache" => false,
 						"lastCached" => time(),
-						"isCached" => $cacheSaved
+						"isCached" => null
 					];
 				}
 			} else {
