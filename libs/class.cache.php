@@ -14,6 +14,9 @@
 	// Load constant definition file
 	require_once dirname(__FILE__).'/const.cache.php';
 
+	// Load YTAPI control class program
+	require_once dirname(__FILE__).'/class.ytapi.php';
+
 	/**
 	 * [DB] キャッシュコントロールクラス
 	 *
@@ -31,6 +34,7 @@
 		private $pass = DB_PASS;
 		private $option = DB_SETTINGS;
 		private $pdo;
+		private $api;
 
 		/**
 		 * [SETUP] コンストラクタ (__construct)
@@ -48,6 +52,7 @@
 					$this->pass,
 					$this->option
 				);
+				$this->api = new YouTubeAPI();
 			} catch (PDOException $e) {
 				throw new DBConnectException("データベースへの接続に失敗しました。[".$e->getMessage()."]");
 			}
@@ -181,6 +186,8 @@
 						$idList[$select["idName"]][] = $v2[$select["idName"]];
 					}
 				}
+				foreach($idList as $k => $v)
+					$this->api->
 				return $idList;
 			} catch (PDOException $e) {
 				return false;
