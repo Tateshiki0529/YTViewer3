@@ -76,6 +76,7 @@
 		public function saveCache($mode, $data, $id = null) {
 			$nowTime = time();
 			$select = $this->selectDB($mode);
+			if ($mode == CACHEMODE_PLAYLISTCONTENTS) {$idValue = $id;} else {$idValue = $data["id"];}
 			if ($select === false) return false;
 			try {
 				$stmt = $this->pdo->prepare("SELECT * FROM `{$select["tableName"]}` WHERE `{$select["idName"]}` = :id;");
@@ -100,11 +101,17 @@
 						}
 					}
 				} elseif (count($result) == 0) {
-					$stmt = $this->pdo->prepare("INSERT INTO `{$select["tableName"]}` (`{$select["idName"]}`, `cacheData`, `lastCached`) VALUES (:id, :data, :last);");
+					$stmt = $this->pdo->query("SELECT * FROM `{$select["tableName"]}` ORDER BY `serialNo` ASC;");
+					$tempData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+					$lastData = $tempData[count($tempData) - 1];
+					$nextCircle = $lastData["updateCircle"] + 1;
+					if ($nextCircle >= 24) $nextCircle = 0;
+					$stmt = $this->pdo->prepare("INSERT INTO `{$select["tableName"]}` (`{$select["idName"]}`, `cacheData`, `lastCached`, `updateCircle`) VALUES (:id, :data, :last, :circle);");
 					$encoded = serialize($data);
 					$stmt->bindParam(":data", $encoded, PDO::PARAM_STR);
 					$stmt->bindValue(":last", $nowTime, PDO::PARAM_INT);
 					$stmt->bindParam(":id", $idValue, PDO::PARAM_STR);
+					$stmt->bindValue(":circle", $nextCircle, PDO::PARAM_INT);
 					if (!$stmt->execute()) {
 						#throw new DBDataInsertException("データの追加に失敗しました。");
 						return false;
@@ -115,7 +122,7 @@
 					throw new DBDataDuplicateException("データの重複が確認されました。管理人へご連絡ください。(ID: {$idValue}) (Mode: {$mode})");
 				}
 			} catch (PDOException $e) {
-				return false;
+				return $e->getMessage();
 			}
 		}
 
@@ -187,21 +194,22 @@
 					}
 				}
 				foreach($idList as $k => $v) {
-					if ($k == "videoId") foreach ($v as $v2) $datas["videos"][$v2] = $this->api->getVideo($v2);
-					if ($k == "channelId") foreach ($v as $v2) $datas["channels"][$v2] = $this->api->getChannel($v2);
-					if ($k == "playlistId") foreach ($v as $v2) $datas["playlists"][$v2] = $this->api->getPlaylist($v2);
+					if ($k == "videoId") foreach ($v as $v2) $videoData[$v2] = $this->api->getVideo($v2);
+					if ($k == "channelId") foreach ($v as $v2) $channelData[$v2] = $this->api->getChannel($v2);
+					if ($k == "playlistId") foreach ($v as $v2) $playlistData[$v2] = $this->api->getPlaylist($v2);
 				}
 
-				foreach ($datas as $k => $v) {
-					if ($k == "videos") {
-						var_dump($v);
-					} elseif ($k == "channels") {
-
-					} elseif ($k == "playlists") {
-
-					}
+				#var_dump($videoData);
+				foreach ($videoData as $k => $v) {
+					if (!$this->saveCache(CACHEMODE_VIDEO, $v["data"])) return false;
 				}
-				return $datas;
+				foreach ($channelData as $k => $v) {
+					if (!$this->saveCache(CACHEMODE_CHANNEL, $v["data"])) return false;
+				}
+				foreach ($playlistData as $k => $v) {
+					if (!$this->saveCache(CACHEMODE_PLAYLIST, $v["data"])) return false;
+				}
+				return true;
 			} catch (PDOException $e) {
 				return false;
 			}
