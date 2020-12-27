@@ -30,6 +30,7 @@
 		private $url = "https://www.googleapis.com/youtube/v3";
 		private $cache;
 		private $key;
+		private $createCacheObject;
 
 		/**
 		 * [SETUP] コンストラクタ (__construct)
@@ -37,14 +38,16 @@
 		 * APIキーの選択とキャッシュクラスの生成を行う。
 		 *
 		 * @access public
+		 * @param boolean $createCacheObject キャッシュオブジェクトを作成するか
 		 * @throws YTAPIUnavailableException 利用できるAPIキーが存在しないときに発生する。
 		 * @throws DBConnectException データベースの接続に失敗したときに発生する。
 		 * @see YTAPIUnavailableException, DBConnectException (Referrence: class.exceptions.php)
 		**/
-		public function __construct() {
+		public function __construct($createCacheObject = true) {
 			// DB Connect
-			$this->cache = new Cache();
+			if ($createCacheObject) $this->cache = new Cache();
 			// Check API Key
+			$this->createCacheObject = $createCacheObject;
 			foreach (YTAPI_KEYS as $v) {
 				$base_url = $this->url."/i18nRegions?";
 				$params = http_build_query([
@@ -56,7 +59,6 @@
 				$result = json_decode(file_get_contents($access_url), true);
 				if (!isset($result["error"])) {
 					$this->key = $v;
-					#var_dump($v);
 				}
 			}
 
@@ -80,7 +82,7 @@
 		public function get($endpoint, $target, $part, $option = null) {
 			// In develop
 			return false;
-			
+
 			/*$base_url = $this->url.$endpoint."?";
 			$params = http_build_query([
 				"part" => "snippet,contentDetails,id,liveStreamingDetails,player,statistics,status",
@@ -111,14 +113,41 @@
 		 * @deprecated file_cget_contents (Referrence: functions.util.php) (利用する意味がなくなったため)
 		**/
 		public function getVideo($id, $options = null) {
-			$cacheData = $this->cache->loadCache(CACHEMODE_VIDEO, $id);
-			if ($cacheData !== false) {
-				$result = $cacheData["cacheData"];
-				$cacheDetails = [
-					"useCache" => true,
-					"lastCached" => $cacheData["lastCached"],
-					"isCached" => null
-				];
+			if ($this->createCacheObject) {
+				$cacheData = $this->cache->loadCache(CACHEMODE_VIDEO, $id);
+				if ($cacheData !== false) {
+					$result = $cacheData["cacheData"];
+					$cacheDetails = [
+						"useCache" => true,
+						"lastCached" => $cacheData["lastCached"],
+						"isCached" => null
+					];
+				} else {
+					$base_url = $this->url."/videos?";
+					$params = http_build_query([
+						"part" => "snippet,contentDetails,id,liveStreamingDetails,player,statistics,status",
+						"fields" => "items(id,snippet(publishedAt,channelId,title,description,thumbnails(default,high),channelTitle,categoryId),contentDetails(duration),liveStreamingDetails,player,statistics,status)",
+						"id" => $id,
+						"hl" => "ja",
+						"key" => $this->key
+					]);
+					$data = file_get_contents($base_url.$params);
+					$result = json_decode($data, true)["items"][0];
+					if ($result == null) return false;
+					$result["snippet"]["publishedAt"] = $this->convert8601_datetime($result["snippet"]["publishedAt"]);
+					$result["contentDetails"]["duration"] = $this->convert8601_duration($result["contentDetails"]["duration"]);
+					if (isset($result["liveStreamingDetails"])) {
+						$result["liveStreamingDetails"]["actualStartTime"] = $this->convert8601_datetime($result["liveStreamingDetails"]["actualStartTime"]);
+						$result["liveStreamingDetails"]["actualEndTime"] = $this->convert8601_datetime($result["liveStreamingDetails"]["actualEndTime"]);
+						$result["liveStreamingDetails"]["scheduledStartTime"] = $this->convert8601_datetime($result["liveStreamingDetails"]["scheduledStartTime"]);
+					}
+					$cacheSaved = $this->cache->saveCache(CACHEMODE_VIDEO, $result);
+					$cacheDetails = [
+						"useCache" => false,
+						"lastCached" => time(),
+						"isCached" => $cacheSaved
+					];
+				}
 			} else {
 				$base_url = $this->url."/videos?";
 				$params = http_build_query([
@@ -163,14 +192,35 @@
 		 * @todo $optionパラメータ未実装
 		**/
 		public function getChannel($id, $option = null) {
-			$cacheData = $this->cache->loadCache(CACHEMODE_CHANNEL, $id);
-			if ($cacheData !== false) {
-				$result = $cacheData["cacheData"];
-				$cacheDetails = [
-					"useCache" => true,
-					"lastCached" => $cacheData["lastCached"],
-					"isCached" => null
-				];
+			if ($this->createCacheObject) {
+				$cacheData = $this->cache->loadCache(CACHEMODE_CHANNEL, $id);
+				if ($cacheData !== false) {
+					$result = $cacheData["cacheData"];
+					$cacheDetails = [
+						"useCache" => true,
+						"lastCached" => $cacheData["lastCached"],
+						"isCached" => null
+					];
+				} else {
+					$base_url = $this->url."/channels?";
+					$params = http_build_query([
+						"part" => "id,snippet,contentDetails,statistics",
+						"fields" => "items(id,snippet(title,description,publishedAt,thumbnails(default,high)),contentDetails,statistics)",
+						"hl" => "ja",
+						"id" => $id,
+						"key" => $this->key
+					]);
+					$data = file_get_contents($base_url.$params);
+					$result = json_decode($data, true)["items"][0];
+					if ($result == null) return false;
+					$result["snippet"]["publishedAt"] = $this->convert8601_datetime($result["snippet"]["publishedAt"]);
+					$cacheSaved = $this->cache->saveCache(CACHEMODE_CHANNEL, $result);
+					$cacheDetails = [
+						"useCache" => false,
+						"lastCached" => time(),
+						"isCached" => $cacheSaved
+					];
+				}
 			} else {
 				$base_url = $this->url."/channels?";
 				$params = http_build_query([
@@ -209,14 +259,35 @@
 		 * @todo $optionパラメータ未実装
 		**/
 		public function getPlaylist($id, $option = null) {
-			$cacheData = $this->cache->loadCache(CACHEMODE_PLAYLIST, $id);
-			if ($cacheData !== false) {
-				$result = $cacheData["cacheData"];
-				$cacheDetails = [
-					"useCache" => true,
-					"lastCached" => $cacheData["lastCached"],
-					"isCached" => null
-				];
+			if ($this->createCacheObject){
+				$cacheData = $this->cache->loadCache(CACHEMODE_PLAYLIST, $id);
+				if ($cacheData !== false) {
+					$result = $cacheData["cacheData"];
+					$cacheDetails = [
+						"useCache" => true,
+						"lastCached" => $cacheData["lastCached"],
+						"isCached" => null
+					];
+				} else {
+					$base_url = $this->url."/playlists?";
+					$params = http_build_query([
+						"part" => "id,snippet,status",
+						"fields" => "items(id,snippet(title,channelId,channelTitle,description,publishedAt,thumbnails(default,high)),status)",
+						"hl" => "ja",
+						"id" => $id,
+						"key" => $this->key
+					]);
+					$data = file_get_contents($base_url.$params);
+					$result = json_decode($data, true)["items"][0];
+					if ($result == null) return false;
+					$result["snippet"]["publishedAt"] = $this->convert8601_datetime($result["snippet"]["publishedAt"]);
+					$cacheSaved = $this->cache->saveCache(CACHEMODE_PLAYLIST, $result);
+					$cacheDetails = [
+						"useCache" => false,
+						"lastCached" => time(),
+						"isCached" => $cacheSaved
+					];
+				}
 			} else {
 				$base_url = $this->url."/playlists?";
 				$params = http_build_query([
@@ -255,6 +326,7 @@
 		 * @todo $optionパラメータ未実装
 		**/
 		public function getPlaylistContents($id, $option = null) {
+			if (!$this->createCacheObject) throw new YTAPINoCacheObjectException("キャッシュオブジェクトが作成されていないため、処理を継続できません。");
 			$cacheData = $this->cache->loadCache(CACHEMODE_PLAYLISTCONTENTS, $id);
 			if ($cacheData !== false) {
 				$result = $cacheData["cacheData"];
