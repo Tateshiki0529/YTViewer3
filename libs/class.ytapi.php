@@ -1,25 +1,25 @@
 <?php
 
 	// YouTube Data API controller <class.ytapi.php>
-	
+
 	// Load config program
 	require_once dirname(__FILE__)."/common.php";
-	
+
 	// Load exceptions class file
 	require_once dirname(__FILE__)."/class.exceptions.php";
 
 	// Load utilities program
 	require_once dirname(__FILE__).'/functions.util.php';
-	
+
 	// Load cache class file
 	require_once dirname(__FILE__)."/class.cache.php";
-	
+
 	// Main class
-	/** 
+	/**
 	 * [API] YouTube Data API コントロールクラス (YouTubeAPI)
-	 * 
+	 *
 	 * YouTube Data API v3(以下、YouTubeAPI)の情報を取得するクラス。
-	 * 
+	 *
 	 * @access public
 	 * @author Tateshiki0529 <info@ttsk3.net>
 	 * @copyright 2020 Tateshiki Lab. All Rights Reserved.
@@ -30,7 +30,7 @@
 		private $url = "https://www.googleapis.com/youtube/v3";
 		private $cache;
 		private $key;
-		
+
 		/**
 		 * [SETUP] コンストラクタ (__construct)
 		 *
@@ -59,12 +59,42 @@
 					#var_dump($v);
 				}
 			}
-			
+
 			if (!isset($this->key)) {
 				throw new YTAPIUnavailableException("利用できるAPIキーが見つかりませんでした。");
 			}
 		}
-		
+
+		/**
+		 * [GET] カスタムリクエスト (get)
+		 *
+		 * パラメータを指定してデータを取得する。
+		 *
+		 * @access public
+		 * @param string $endpoint アクセス先を指定 (e.g. /videos, /channels)
+		 * @param string $target ターゲットID
+		 * @param array $part 取得するリソースプロパティ (e.g. ["id", "snippet"])
+		 * @param (array $option オプション)
+		 * @return array $result 取得データ
+		**/
+		public function get($endpoint, $target, $part, $option = null) {
+			// In develop
+			return false;
+			
+			/*$base_url = $this->url.$endpoint."?";
+			$params = http_build_query([
+				"part" => "snippet,contentDetails,id,liveStreamingDetails,player,statistics,status",
+				"fields" => "items(id,snippet(publishedAt,channelId,title,description,thumbnails(default,high),channelTitle,categoryId),contentDetails(duration),liveStreamingDetails,player,statistics,status)",
+				"id" => $id,
+				"hl" => "ja",
+				"key" => $this->key
+			]);
+			$data = file_get_contents($base_url.$params);
+			$result = json_decode($data, true)["items"];
+			if ($result == null) return false;
+			return $result;*/
+		}
+
 		/**
 		 * [GET] 動画情報取得 (getVideo)
 		 *
@@ -119,7 +149,7 @@
 			$return["cacheDetails"] = $cacheDetails;
 			return $return;
 		}
-		
+
 		/**
 		 * [GET] チャンネル情報取得 (getChannel)
 		 *
@@ -165,7 +195,7 @@
 			$return["cacheDetails"] = $cacheDetails;
 			return $return;
 		}
-		
+
 		/**
 		 * [GET] プレイリスト情報取得 (getPlaylist)
 		 *
@@ -284,7 +314,7 @@
 			$return["cacheDetails"] = $cacheDetails;
 			return $return;
 		}
-		
+
 		// --- ↑ Public | Private ↓ ---
 
 		/**
@@ -318,5 +348,5 @@
 			$converted = new DateInterval($duration);
 			return $converted->format("%H:%I:%S");
 		}
-		
+
 	}

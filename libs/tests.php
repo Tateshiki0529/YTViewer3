@@ -29,6 +29,6 @@
 			break;
 	}*/
 
-	var_dump($cache->updateCache($_GET["circle"]));
+	# var_dump($cache->updateCache($_GET["circle"]));
 
 ?>
