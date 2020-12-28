@@ -5,13 +5,15 @@
 	// Load classes
 	require_once './class.ytapi.php';
 	require_once './class.cache.php';
+	require_once './class.sitestat.php';
 
 	$api = new YouTubeAPI();
 	$cache = new Cache();
+	$stat = new SiteStatistics();
 
 	header("Content-Type: application/json");
 
-	switch ($_GET["m"]) {
+	/*switch ($_GET["m"]) {
 		case 'video':
 			var_dump($api->getVideo($_GET["id"]));
 			break;
@@ -27,8 +29,9 @@
 		default:
 			# code...
 			break;
-	}
+	}*/
 
-	/*echo json_encode($cache->updateCache($_GET["circle"]), JSON_PRETTY_PRINT);*/
+	var_dump($stat->resetStats(CACHEMODE_VIDEO));
+	#var_dump($_SERVER["DOCUMENT_ROOT"]);
 
 ?>
