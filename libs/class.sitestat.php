@@ -41,7 +41,7 @@
 		**/
 		public function loadStats($mode) {
 			$fn = $this->selectFile($mode);
-			return json_decode(file_get_contents($fn), true);
+			return json_decode(file_get_contents($fn["statsFile"]), true);
 		}
 
 		/**
@@ -94,7 +94,7 @@
 			$fn = $this->selectFile($mode);
 			$arrayKeys = ["search_count", "cache_count", "save_date"];
 			foreach ($arrayKeys as $k) {
-				foreach (range(0,23) as $i) {
+				foreach (range(0,22) as $i) {
 					$blank[$k][] = 0;
 				}
 			}
