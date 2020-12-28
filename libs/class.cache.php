@@ -170,6 +170,28 @@
 		}
 
 		/**
+		 * [COUNT] データ数カウント (countCache)
+		 *
+	 	 * データベース内のデータの個数をカウントする。
+		 *
+		 * @access public
+		 * @param int $mode キャッシュ読み込みモード (Referrence: docs/list.const.md)
+		 * @return int $count データの個数
+		 * @return boolean false 失敗時
+		**/
+		public function countCache($mode) {
+			try {
+				$select = $this->selectDB($mode);
+				if ($select === false) return false;
+				$stmt = $this->pdo->prepare("SELECT count(*) FROM `{$select["tableName"]}`;");
+				if (!$stmt->execute()) return false;
+				return $stmt->fetchAll(PDO::FETCH_ASSOC)[0]["count(*)"];
+			} catch (PDOException $e) {
+				return false;
+			}
+		}
+
+		/**
 		 * [REFRESH] キャッシュデータの更新 (updateCache)
 		 *
 		 * キャッシュの更新、古いデータ(6ヶ月アクセスなし)の削除、統計の記録を行う。
