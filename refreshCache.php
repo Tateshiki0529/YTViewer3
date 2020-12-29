@@ -12,8 +12,8 @@
 	$cache = new Cache();
 	$stat = new SiteStatistics();
 	$time = (int)date("G") % 6;
-	var_dump($cache->updateCache($time));
-	if (date("i") == "00" or date("i") == "30") foreach ([CACHEMODE_VIDEO, CACHEMODE_CHANNEL, CACHEMODE_PLAYLIST, CACHEMODE_PLAYLISTCONTENTS] as $v) {
+	if (date("H") == "00") var_dump($cache->updateCache($time));
+	if (date("i") == "00" or date("i") == "30") foreach ([CACHEMODE_VIDEO, CACHEMODE_CHANNEL, CACHEMODE_PLAYLIST] as $v) {
 		var_dump($stat->saveStats($v));
 	}
 ?>
