@@ -216,7 +216,7 @@
 					if (!$stmt->execute()) return false;
 					$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 					$idList[$select["idName"]] = [];
-					foreach ($result as $v2) {
+					if (count($result) >= 1) foreach ($result as $v2) {
 						$after6Months = strtotime(date("Y/m/d H:i:s", $v2["lastAccessed"])." +6 months");
 						if ($nowTime >= $after6Months) {
 							$deleteList[$select["idName"]][] = $v2[$select["idName"]];
@@ -246,7 +246,7 @@
 					$stmt->bindParam(":id", $v["data"]["id"], PDO::PARAM_STR);
 					if ($stmt->execute()) {
 						$result = $stmt->fetchAll(PDO::FETCH_ASSOC)[0];
-						if ($result !== null) {
+						if (count($result) >= 1) {
 							foreach ($result as $k2 => $v2) {
 								$result[$k2] = unserialize($v2);
 								array_shift($result[$k2]);
