@@ -71,14 +71,13 @@
 						$file[$k][] = $this->cache->countCache($mode);
 						break;
 					case 'save_date':
-						$file[$k][] = time();
+						$file[$k][] = date("H:i");
 						break;
 				}
 			}
 			$fp = fopen($fn["statsFile"], "w");
 			fputs($fp, json_encode($file, JSON_PRETTY_PRINT));
-			fclose($fp);
-			return true;
+			return fclose($fp);
 		}
 
 		/**
@@ -118,7 +117,7 @@
 		 * @return boolean false モードが存在しない時
 		**/
 		private function selectFile($mode) {
-			$root = $_SERVER["DOCUMENT_ROOT"];
+			$root = DOC_ROOT;
 			switch ($mode) {
 				case CACHEMODE_VIDEO:
 					return ["statsFile" => $root."/stats/video.json", "searchCountFile" => $root."/stats/search.video.txt"];
