@@ -36,4 +36,20 @@
 
 		return $result;
 	}
+
+	/**
+	 * [SELECT] グラフステップサイズの決定 (selectStep)
+	 *
+	 * グラフの上がり幅を選択する。
+	 *
+	 * @access public
+	 * @param int $max 最大値
+	 * @return int $step 上がり幅
+	**/
+	function selectStep($max) {
+		$step_r = $max / 10;
+		$step = intval($step_r);
+		if ($step == 0) $step = 1;
+		return $step;
+	}
 ?>
