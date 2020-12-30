@@ -1,5 +1,7 @@
 <?php
 
+	// Note: index.php error parameter (Referrence: index.php @ docs/list.params.md)
+
 	// Index page <index.php>
 	error_reporting(E_ALL&&!E_NOTICE);
 
