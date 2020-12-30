@@ -31,7 +31,7 @@
 			break;
 	}*/
 
-	var_dump($stat->resetStats(CACHEMODE_VIDEO));
-	#var_dump($_SERVER["DOCUMENT_ROOT"]);
+	#var_dump($stat->resetStats(CACHEMODE_VIDEO));
+	var_dump($_SERVER["DOCUMENT_ROOT"]);
 
 ?>
