@@ -33,9 +33,7 @@
 				このサイトは、YouTubeのデータ、また統計データを「分かりやすく」お伝えするため開発されています。
 			</p>
 			<h2 class="my-5 heading h2">使ってみる</h2>
-			<p class="my-3">
-				<<<検索欄実装中>>>
-			</p>
+			<?php require_once dirname(__FILE__).'/includes/include.searchform.php'; ?>
 			<h2 class="my-5 heading h3">統計情報</h2>
 			<div class="bs-component">
 				<ul class="nav nav-tabs">
